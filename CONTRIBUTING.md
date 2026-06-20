@@ -22,6 +22,27 @@ uv run ruff format --check .
 uv run ty check
 ```
 
+## Commits And Changelog
+
+Use Conventional Commit messages. Commitizen is installed in the dev dependency
+group:
+
+```bash
+uv run cz commit
+uv run cz bump
+uv run cz bump --yes  # non-interactive release path
+```
+
+`cz bump` updates the project version, updates `CHANGELOG.md`, creates a release
+commit, and creates a `v$version` tag.
+
+Install commit hooks with:
+
+```bash
+prek install
+prek install --hook-type commit-msg --hook-type pre-push
+```
+
 ## Development Rules
 
 - Keep runtime-injected modules standard-library-only.

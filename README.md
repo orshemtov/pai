@@ -3,7 +3,6 @@
 Agent-native runtime output for Python.
 
 [![CI](https://github.com/orshemtov/pai/actions/workflows/ci.yml/badge.svg)](https://github.com/orshemtov/pai/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/pai-trace.svg)](https://pypi.org/project/pai-trace/)
 [![Python](https://img.shields.io/badge/python-3.13%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Runtime deps: zero](https://img.shields.io/badge/runtime%20deps-zero-brightgreen.svg)](pyproject.toml)
@@ -56,18 +55,13 @@ layer around the language people already use.
 
 ## Agent Quick Start
 
-Install the CLI from PyPI after the first release:
-
-```bash
-uv tool install pai-trace
-```
-
-Or use a checkout:
+Use a checkout until the first package release is published:
 
 ```bash
 git clone https://github.com/orshemtov/pai.git
 cd pai
 uv sync
+uv run pai run python --version
 ```
 
 Run the target command through PAI:
@@ -84,8 +78,8 @@ Read the latest run:
 pai bundle --run .pai/runs/latest
 ```
 
-The PyPI distribution is `pai-trace` because `pai` is already used on PyPI. The
-CLI command and Python import package are still named `pai`.
+The planned PyPI distribution is `pai-trace` because `pai` is already used on
+PyPI. The CLI command and Python import package are still named `pai`.
 
 ## What Agents Get
 
@@ -202,6 +196,16 @@ uv run ruff format --check .
 uv run ty check
 uv build
 ```
+
+Release automation uses Commitizen:
+
+```bash
+uv run cz bump
+uv run cz bump --yes  # non-interactive release path
+```
+
+`cz bump` updates `pyproject.toml`, updates `CHANGELOG.md`, creates a release
+commit, and tags it using `v$version`.
 
 See [`AGENTS.md`](AGENTS.md) for repo rules and [`spec/`](spec/) for architecture
 notes.

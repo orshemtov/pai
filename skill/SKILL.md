@@ -23,12 +23,6 @@ agents better program output.
 
 ## Install
 
-From PyPI after the first release:
-
-```bash
-uv tool install pai-trace
-```
-
 From a checkout:
 
 ```bash
@@ -37,8 +31,8 @@ cd pai
 uv sync
 ```
 
-The PyPI distribution is `pai-trace`. The CLI command and Python import package
-are named `pai`.
+The planned PyPI distribution is `pai-trace`. The CLI command and Python import
+package are named `pai`.
 
 ## Run A Program
 

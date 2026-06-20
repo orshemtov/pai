@@ -1,4 +1,7 @@
-# Hooks run via `prek` (pre-commit compatible). Install: `prek install`.
+# Hooks run via `prek` (pre-commit compatible).
+# Install:
+#   prek install
+#   prek install --hook-type commit-msg --hook-type pre-push
 # ruff and ty run through uv so versions match the dev dependency group.
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -10,6 +13,14 @@ repos:
       - id: check-toml
       - id: check-merge-conflict
       - id: check-added-large-files
+
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.16.3
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+      - id: commitizen-branch
+        stages: [pre-push]
 
   - repo: local
     hooks:

@@ -1,5 +1,8 @@
 # Changelog
 
+All notable changes to this project are documented here. Releases are generated
+with Commitizen from Conventional Commit history.
+
 ## 0.1.0
 
 - Initial public release.
