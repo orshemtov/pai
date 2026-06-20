@@ -38,11 +38,13 @@ class PaiPlugin:
         start = self.start_times.pop(report.nodeid, time.monotonic())
         duration_ms = int((time.monotonic() - start) * 1000)
 
-        outcome = "passed"
-        if report.failed:
-            outcome = "failed"
-        elif report.skipped:
-            outcome = "skipped"
+        match report.failed, report.skipped:
+            case True, _:
+                outcome = "failed"
+            case _, True:
+                outcome = "skipped"
+            case _:
+                outcome = "passed"
 
         message = ""
         if report.failed and report.longrepr:
@@ -68,7 +70,10 @@ class PaiPlugin:
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    run_dir_str = os.environ.get(RUN_DIR_ENV)
+    if RUN_DIR_ENV not in os.environ:
+        return
+
+    run_dir_str = os.environ[RUN_DIR_ENV]
     if not run_dir_str:
         return
     config.pluginmanager.register(PaiPlugin(run_dir=Path(run_dir_str)))

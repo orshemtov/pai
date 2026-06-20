@@ -24,17 +24,24 @@ class EventWriter:
     def __init__(self, run_dir: Path) -> None:
         self.run_dir = run_dir
         self.lock = threading.RLock()
+        self.next_event_number = 1
 
         self.events_file = self.open_file(EVENTS_FILE)
         self.type_files: dict[str, TextIO] = {}
 
     def write(self, event: Event) -> None:
-        data: dict = {"timestamp": datetime.now(UTC).isoformat()}
-        data.update(event.to_dict())
-
-        line = json.dumps(data)
-
         with self.lock:
+            event_id = f"evt_{self.next_event_number:06d}"
+            self.next_event_number += 1
+
+            data: dict = {
+                "timestamp": datetime.now(UTC).isoformat(),
+                "run_id": self.run_dir.name,
+                "event_id": event_id,
+            }
+            data.update(event.to_dict())
+
+            line = json.dumps(data)
             self.append_line(self.events_file, line)
             self.append_line(self.type_file_for(event.event_name), line)
 
@@ -60,7 +67,9 @@ class EventWriter:
         return (self.run_dir / name).open("a", encoding="utf-8")
 
     def type_file_for(self, event_name: str) -> TextIO:
-        handle = self.type_files.get(event_name)
+        handle = None
+        if event_name in self.type_files:
+            handle = self.type_files[event_name]
         if not handle:
             handle = self.open_file(f"{event_name}s.json")
             self.type_files[event_name] = handle

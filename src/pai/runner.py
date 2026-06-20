@@ -14,7 +14,7 @@ import time
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
-from pai import run as run_module
+import pai.run
 from pai.events import RunEndEvent
 from pai.writer import EventWriter
 
@@ -34,7 +34,9 @@ def build_env(run_dir: Path, env: Mapping[str, str]) -> dict[str, str]:
     result = dict(env)
 
     bootstrap = str(bootstrap_dir())
-    existing = result.get(PYTHONPATH_ENV)
+    existing = ""
+    if PYTHONPATH_ENV in result:
+        existing = result[PYTHONPATH_ENV]
     if existing:
         result[PYTHONPATH_ENV] = bootstrap + os.pathsep + existing
     else:
@@ -52,7 +54,7 @@ def run(
     """Run ``argv`` as a PAI-instrumented subprocess; return its exit code."""
     source_env = env or os.environ
 
-    run_dir = run_module.create_run_dir(base)
+    run_dir = pai.run.create_run_dir(base)
     injected_env = build_env(run_dir, source_env)
 
     start = time.monotonic()

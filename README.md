@@ -75,6 +75,8 @@ pai run uvicorn app.main:app
 Read the latest run:
 
 ```bash
+pai query status
+pai query failures
 pai bundle --run .pai/runs/latest
 ```
 
@@ -92,6 +94,13 @@ PAI writes newline-delimited JSON to:
 It also creates a grouped bundle:
 
 ```bash
+pai query status
+pai query failures
+pai query tests
+pai query effects
+pai query timeline --limit 50
+pai query symbol --name app.parse_user
+pai query repair-context --event evt_000003
 pai bundle --run .pai/runs/latest --out pai-bundle.json
 ```
 
@@ -104,12 +113,23 @@ Event families:
 | `import` | Runtime import edges |
 | `call` | App-owned function calls and duration |
 | `test` | Pytest item outcome, duration, file, message |
-| `http`, `sql`, `aws`, `ai` | Side-effect event families for integrations |
+| `requests`, `httpx`, `sqlalchemy`, `asyncpg`, `boto3`, `aiobotocore`, `openai`, `anthropic` | Side-effect events by concrete package |
+
+Each emitted event includes:
+
+- `run_id`: the run directory name.
+- `event_id`: a stable per-run handle like `evt_000003`.
+- `timestamp`: when PAI wrote the event.
+
+Agents should use these handles for follow-up queries instead of reloading full
+logs.
 
 Example exception event:
 
 ```json
 {
+  "run_id": "20260620T120000-abc12345",
+  "event_id": "evt_000003",
   "event": "exception",
   "schema_version": 1,
   "symbol": "__main__.parse_user",
@@ -127,6 +147,19 @@ Example exception event:
 ```
 
 Agents should prefer this data over terminal output.
+
+## Query Workflow
+
+For most agent loops, inspect data in this order:
+
+```bash
+pai run --summary-json pytest
+pai query status
+pai query failures
+pai query repair-context --event <event_id>
+```
+
+Use `pai bundle` only when the agent needs the full run artifact.
 
 ## Privacy Contract
 

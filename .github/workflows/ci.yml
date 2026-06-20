@@ -34,3 +34,6 @@ jobs:
 
       - name: Run ty
         run: uv run ty check
+
+      - name: Check imports
+        run: uv run lint-imports

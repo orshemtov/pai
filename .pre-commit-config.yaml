@@ -45,3 +45,10 @@ repos:
         types: [python]
         pass_filenames: false
         require_serial: true
+
+      - id: import-linter
+        name: import architecture
+        entry: uv run lint-imports
+        language: system
+        pass_filenames: false
+        require_serial: true

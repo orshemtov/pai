@@ -76,7 +76,7 @@ Adopted (done):
 - [x] `RunEndEvent` — captures exit_code, duration_ms after subprocess exits
 
 Deferred (future consideration):
-- [ ] `pai query` — hierarchical inspection API (status → narrow → full snapshot)
+- [x] `pai query` — hierarchical inspection API (status → narrow → full snapshot)
       to control token budget when agents query events
 - [ ] Watch / plan mode — `pai watch <cmd>`, returns what files changed + what re-ran
 - [ ] Fix-guidance tags on exception events (e.g. "fixSafety" level)

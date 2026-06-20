@@ -57,7 +57,9 @@ def build_exception_event(
     frame = deepest.tb_frame
     code = frame.f_code
 
-    module = frame.f_globals.get("__name__", "?")
+    module = "?"
+    if "__name__" in frame.f_globals:
+        module = frame.f_globals["__name__"]
     symbol = f"{module}.{code.co_qualname}"
 
     locals_schema: dict[str, LocalSchema] = {}

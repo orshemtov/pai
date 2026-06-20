@@ -32,7 +32,9 @@ def summarize_latest_run() -> None:
     counts: dict[str, int] = {}
     for event in events:
         name = str(event["event"])
-        current = counts.get(name, 0)
+        current = 0
+        if name in counts:
+            current = counts[name]
         counts[name] = current + 1
 
     print("latest run events:")

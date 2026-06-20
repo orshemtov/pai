@@ -18,9 +18,13 @@ run = "uv run ruff format --check ."
 description = "Type check with ty"
 run = "uv run ty check"
 
+[tasks.imports]
+description = "Check import architecture contracts"
+run = "uv run lint-imports"
+
 [tasks.check]
 description = "Run lint + format check + type check"
-depends = ["lint", "format:check", "typecheck"]
+depends = ["lint", "format:check", "typecheck", "imports"]
 
 [tasks.ci]
 description = "Run full CI pipeline: tests + check"

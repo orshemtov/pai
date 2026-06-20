@@ -7,6 +7,10 @@ Use PAI when a coding agent needs structured facts from a Python execution:
 ```bash
 pai run python app.py
 pai run pytest
+pai run --summary-json pytest
+pai query status
+pai query failures
+pai query repair-context --event <event_id>
 pai bundle --run .pai/runs/latest
 ```
 
@@ -22,5 +26,6 @@ Important constraints:
 - Runtime-injected code must use the Python standard library only.
 - PAI records schemas and metadata, not raw user values.
 - The PyPI distribution is `pai-trace`; the CLI and import package are `pai`.
-- Agents should prefer `.pai/runs/latest/events.jsonl` and `pai bundle` over
-  terminal prose.
+- Agents should prefer `pai query` over loading full JSONL. Use
+  `.pai/runs/latest/events.jsonl` and `pai bundle` when a compact query is not
+  enough.

@@ -42,6 +42,7 @@ Wrap the target command with `pai run`:
 pai run python app.py
 pai run pytest
 pai run uvicorn app.main:app
+pai run --summary-json pytest
 ```
 
 PAI returns the same exit code as the target command. A non-zero exit can still
@@ -67,7 +68,33 @@ Important event families:
 - `import`: runtime import edges.
 - `call`: app-owned function call timing.
 - `test`: pytest item outcome, duration, file, message.
-- `http`, `sql`, `aws`, `ai`: side-effect event families.
+- `requests`, `httpx`, `sqlalchemy`, `asyncpg`, `boto3`, `aiobotocore`,
+  `openai`, `anthropic`: side-effect events by concrete package.
+
+Every event includes `run_id`, `event_id`, and `timestamp`. Use `event_id` as
+the handle for follow-up queries.
+
+## Query A Run
+
+Prefer compact queries before loading full event logs:
+
+```bash
+pai query status
+pai query failures
+pai query tests
+pai query effects
+pai query timeline --limit 50
+pai query symbol --name app.parse_user
+pai query repair-context --event evt_000003
+```
+
+Recommended repair loop:
+
+```bash
+pai run --summary-json pytest
+pai query failures
+pai query repair-context --event <event_id>
+```
 
 ## Build A Bundle
 
@@ -81,7 +108,7 @@ pai bundle --run .pai/runs/latest --out pai-bundle.json
 The bundle groups events into top-level sections:
 
 ```text
-run, exceptions, imports, calls, tests, http, sql, aws, ai
+run, exceptions, imports, calls, tests, effects
 ```
 
 ## Privacy Rules

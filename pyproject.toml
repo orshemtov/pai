@@ -42,6 +42,7 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "commitizen>=4.16.3",
+    "import-linter>=2.11",
     "pytest>=8.0",
     "ruff>=0.9",
     "ty>=0.0.1",
@@ -85,3 +86,29 @@ tag_format = "v$version"
 changelog_file = "CHANGELOG.md"
 update_changelog_on_bump = true
 major_version_zero = true
+
+[tool.importlinter]
+root_package = "pai"
+
+[[tool.importlinter.contracts]]
+name = "PAI modules remain acyclic"
+type = "acyclic_siblings"
+ancestors = ["pai"]
+
+[[tool.importlinter.contracts]]
+name = "Runtime path does not import agent tooling"
+type = "forbidden"
+source_modules = [
+    "pai.bootstrap",
+    "pai.collectors",
+    "pai.events",
+    "pai.run",
+    "pai.runner",
+    "pai.writer",
+]
+forbidden_modules = [
+    "pai.bundle",
+    "pai.cli",
+    "pai.pytest_plugin",
+    "pai.query",
+]

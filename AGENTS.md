@@ -16,6 +16,13 @@ Dev tooling goes in the dev dependency group.
 
 - **Modern typing.** Annotate everything. Use `@dataclass` for records. Use `TypedDict` for
   known-shape dicts (prefer a dataclass when the shape is owned by us).
+- **Owned records use dataclasses.** If we own the shape and it has behavior or crosses function
+  boundaries, prefer a dataclass over a plain dict. Use plain dicts for parsed/emitted JSON and
+  genuinely dynamic mappings.
+- **Use `StrEnum` for string domains.** Event names, command names, modes, and other finite
+  string sets should use `enum.StrEnum` instead of loose string constants when practical.
+- **Prefer `match` for command/type dispatch.** Use `match` over long `if` / `elif` chains when
+  dispatching on a finite domain such as a command or event type.
 - **Loops over comprehensions.** Write normal `for` loops for readability. Avoid list/dict/set
   comprehensions and generator expressions except trivial one-liners that are clearer that way.
 - **Truthiness over sentinel spelling.** Prefer `if value:` and `if not value:` over
@@ -23,8 +30,19 @@ Dev tooling goes in the dev dependency group.
   empty collection, zero, or empty string is a valid distinct value, make that distinction
   explicit with a small helper or clear branch structure.
 - **No `hasattr` / `getattr` / `setattr`.** Use explicit attribute access and typed structures.
+- **No `.get(...)` for field access.** Avoid `dict.get`, `Mapping.get`, and default-value field
+  reads. Use dataclasses or typed structures when we own the shape. For parsed JSON or external
+  mappings, validate required keys with direct `mapping[key]` access and use explicit
+  `"key" in mapping` branches for optional fields.
 - **No `from __future__ import annotations`.**
 - **Imports at the top only.** No mid-file or in-function imports.
+- **Avoid import aliases.** Prefer importing the real name. Use an alias only when it avoids a
+  genuine name collision or follows a standard convention that makes code clearer.
+- **Avoid import cycles.** Keep module dependencies directed. Runtime-injected modules must not
+  import CLI/query/bundle/dev-only modules.
+- **Keep `__init__.py` logic-free.** Use `__init__.py` only as a package marker or explicit
+  `__all__` / re-export surface. Put install hooks, registries, dispatch, and behavior in
+  normal modules.
 - **One effect per line.** Avoid semicolon-style command/code chains and dense one-liners that
   import, compute, call, and print together. Split setup, action, and output into separate
   statements so execution is easy to read and debug.
@@ -74,6 +92,7 @@ uv run pytest                 # run tests
 uv run ruff check .           # lint
 uv run ruff format .          # format (use --check in CI)
 uv run ty check               # type check
+uv run lint-imports           # import architecture contracts
 prek run --all-files          # all pre-commit hooks
 ```
 

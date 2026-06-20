@@ -26,7 +26,9 @@ SITECUSTOMIZE_MODULE = "sitecustomize"
 
 
 def module_name(frame: FrameType) -> str:
-    value = frame.f_globals.get("__name__", "?")
+    value = "?"
+    if "__name__" in frame.f_globals:
+        value = frame.f_globals["__name__"]
     if isinstance(value, str):
         return value
     return "?"
@@ -61,32 +63,36 @@ class CallCollector:
                 self.original_profile(frame, event, arg)
             return
 
-        if event == "call":
-            self.pending[id(frame)] = time.monotonic()
+        match event:
+            case "call":
+                self.pending[id(frame)] = time.monotonic()
 
-        elif event == "return":
-            start = self.pending.pop(id(frame), None)
-            if start:
-                duration_ms = int((time.monotonic() - start) * 1000)
+            case "return":
+                start = self.pending.pop(id(frame), None)
+                if start:
+                    duration_ms = int((time.monotonic() - start) * 1000)
 
-                module = module_name(frame)
-                callee = f"{module}.{frame.f_code.co_qualname}"
+                    module = module_name(frame)
+                    callee = f"{module}.{frame.f_code.co_qualname}"
 
-                caller_frame = frame.f_back
-                caller = "__unknown__"
-                if caller_frame:
-                    caller_module = module_name(caller_frame)
-                    caller = f"{caller_module}.{caller_frame.f_code.co_qualname}"
+                    caller_frame = frame.f_back
+                    caller = "__unknown__"
+                    if caller_frame:
+                        caller_module = module_name(caller_frame)
+                        caller = f"{caller_module}.{caller_frame.f_code.co_qualname}"
 
-                self.writer.write(
-                    CallEvent(
-                        caller=caller,
-                        callee=callee,
-                        file=frame.f_code.co_filename,
-                        line=frame.f_lineno,
-                        duration_ms=duration_ms,
+                    self.writer.write(
+                        CallEvent(
+                            caller=caller,
+                            callee=callee,
+                            file=frame.f_code.co_filename,
+                            line=frame.f_lineno,
+                            duration_ms=duration_ms,
+                        )
                     )
-                )
+
+            case _:
+                pass
 
         if self.original_profile:
             self.original_profile(frame, event, arg)

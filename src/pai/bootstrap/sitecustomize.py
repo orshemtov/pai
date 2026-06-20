@@ -15,7 +15,8 @@ import sys
 from collections.abc import Mapping
 from pathlib import Path
 
-from pai.collectors import calls, exceptions, imports, side_effects
+from pai.collectors import calls, exceptions, imports
+from pai.collectors.side_effects import registry
 from pai.events import RunStartEvent
 from pai.writer import EventWriter
 
@@ -37,7 +38,10 @@ def chain_existing_sitecustomize(search_path: list[str]) -> None:
 
 
 def activate(env: Mapping[str, str], argv: list[str], cwd: str, python_version: str) -> None:
-    run_dir = env.get(RUN_DIR_ENV)
+    if RUN_DIR_ENV not in env:
+        return
+
+    run_dir = env[RUN_DIR_ENV]
     if not run_dir:
         return
 
@@ -48,7 +52,7 @@ def activate(env: Mapping[str, str], argv: list[str], cwd: str, python_version: 
     exceptions.install(writer)
     import_collector = imports.install(writer)
     calls.install(writer)
-    side_effects.install(writer, import_collector)
+    registry.install(writer, import_collector)
 
 
 with contextlib.suppress(Exception):

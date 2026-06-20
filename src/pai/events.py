@@ -8,18 +8,24 @@ import dataclasses
 from dataclasses import dataclass
 from typing import ClassVar, NotRequired, TypedDict
 
+from pai.event_names import EventName
+
 __all__ = [
-    "AiEvent",
-    "AwsEvent",
+    "AiobotocoreEvent",
+    "AnthropicEvent",
+    "AsyncpgEvent",
+    "Boto3Event",
     "CallEvent",
     "Event",
     "ExceptionEvent",
-    "HttpEvent",
+    "HttpxEvent",
     "ImportEvent",
     "LocalSchema",
+    "OpenaiEvent",
+    "RequestsEvent",
     "RunEndEvent",
     "RunStartEvent",
-    "SqlEvent",
+    "SqlalchemyEvent",
     "TestEvent",
 ]
 
@@ -44,7 +50,7 @@ class Event:
     constructors free of generated defaults.
     """
 
-    event_name: ClassVar[str]
+    event_name: ClassVar[EventName]
     schema_version: ClassVar[int] = 1
 
     def to_dict(self) -> dict:
@@ -62,7 +68,7 @@ class Event:
 class ExceptionEvent(Event):
     """An uncaught exception, located at the deepest frame of its traceback."""
 
-    event_name: ClassVar[str] = "exception"
+    event_name: ClassVar[EventName] = EventName.EXCEPTION
 
     symbol: str
     file: str
@@ -76,52 +82,17 @@ class ExceptionEvent(Event):
 class ImportEvent(Event):
     """A single import edge: ``module`` imported ``imported`` at runtime."""
 
-    event_name: ClassVar[str] = "import"
+    event_name: ClassVar[EventName] = EventName.IMPORT
 
     module: str
     imported: str
 
 
 @dataclass
-class SqlEvent(Event):
-    """A SQL statement executed via SQLAlchemy or asyncpg."""
+class RequestsEvent(Event):
+    """An outbound HTTP request captured from requests."""
 
-    event_name: ClassVar[str] = "sql"
-
-    operation: str
-    query: str
-    duration_ms: int
-
-
-@dataclass
-class AwsEvent(Event):
-    """An AWS API call captured from botocore (boto3 / aiobotocore)."""
-
-    event_name: ClassVar[str] = "aws"
-
-    service: str
-    operation: str
-    duration_ms: int
-
-
-@dataclass
-class AiEvent(Event):
-    """An LLM completion call captured from openai or anthropic SDK."""
-
-    event_name: ClassVar[str] = "ai"
-
-    provider: str
-    model: str
-    input_tokens: int
-    output_tokens: int
-    duration_ms: int
-
-
-@dataclass
-class HttpEvent(Event):
-    """An outbound HTTP request captured from requests or httpx."""
-
-    event_name: ClassVar[str] = "http"
+    event_name: ClassVar[EventName] = EventName.REQUESTS
 
     method: str
     url: str
@@ -130,10 +101,90 @@ class HttpEvent(Event):
 
 
 @dataclass
+class HttpxEvent(Event):
+    """An outbound HTTP request captured from httpx."""
+
+    event_name: ClassVar[EventName] = EventName.HTTPX
+
+    method: str
+    url: str
+    status_code: int
+    duration_ms: int
+
+
+@dataclass
+class SqlalchemyEvent(Event):
+    """A SQL statement executed via SQLAlchemy."""
+
+    event_name: ClassVar[EventName] = EventName.SQLALCHEMY
+
+    operation: str
+    query: str
+    duration_ms: int
+
+
+@dataclass
+class AsyncpgEvent(Event):
+    """A SQL statement executed via asyncpg."""
+
+    event_name: ClassVar[EventName] = EventName.ASYNCPG
+
+    operation: str
+    query: str
+    duration_ms: int
+
+
+@dataclass
+class Boto3Event(Event):
+    """An AWS API call captured from botocore clients used by boto3."""
+
+    event_name: ClassVar[EventName] = EventName.BOTO3
+
+    service: str
+    operation: str
+    duration_ms: int
+
+
+@dataclass
+class AiobotocoreEvent(Event):
+    """An AWS API call captured from aiobotocore clients."""
+
+    event_name: ClassVar[EventName] = EventName.AIOBOTOCORE
+
+    service: str
+    operation: str
+    duration_ms: int
+
+
+@dataclass
+class OpenaiEvent(Event):
+    """An LLM completion call captured from the openai SDK."""
+
+    event_name: ClassVar[EventName] = EventName.OPENAI
+
+    model: str
+    input_tokens: int
+    output_tokens: int
+    duration_ms: int
+
+
+@dataclass
+class AnthropicEvent(Event):
+    """An LLM completion call captured from the anthropic SDK."""
+
+    event_name: ClassVar[EventName] = EventName.ANTHROPIC
+
+    model: str
+    input_tokens: int
+    output_tokens: int
+    duration_ms: int
+
+
+@dataclass
 class CallEvent(Event):
     """A single Python function call with timing."""
 
-    event_name: ClassVar[str] = "call"
+    event_name: ClassVar[EventName] = EventName.CALL
 
     caller: str
     callee: str
@@ -146,7 +197,7 @@ class CallEvent(Event):
 class TestEvent(Event):
     """Outcome of a single pytest test item."""
 
-    event_name: ClassVar[str] = "test"
+    event_name: ClassVar[EventName] = EventName.TEST
 
     test_id: str
     outcome: str
@@ -159,7 +210,7 @@ class TestEvent(Event):
 class RunStartEvent(Event):
     """Emitted by the bootstrap as soon as the instrumented process starts."""
 
-    event_name: ClassVar[str] = "run_start"
+    event_name: ClassVar[EventName] = EventName.RUN_START
 
     command: list[str]
     cwd: str
@@ -170,7 +221,7 @@ class RunStartEvent(Event):
 class RunEndEvent(Event):
     """Emitted by the runner after the instrumented subprocess exits."""
 
-    event_name: ClassVar[str] = "run_end"
+    event_name: ClassVar[EventName] = EventName.RUN_END
 
     exit_code: int
     duration_ms: int

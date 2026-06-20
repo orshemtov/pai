@@ -4,7 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from pai import run as run_module
+import pai.run
 
 PASSING_TEST = """\
 def test_passes():
@@ -30,7 +30,7 @@ def run_plugin(tmp_path: Path, test_source: str) -> list[dict]:
     test_file = tmp_path / "test_target.py"
     test_file.write_text(test_source, encoding="utf-8")
 
-    run_dir = run_module.create_run_dir(base=tmp_path)
+    run_dir = pai.run.create_run_dir(base=tmp_path)
 
     env = dict(os.environ)
     env["PAI_RUN_DIR"] = str(run_dir)

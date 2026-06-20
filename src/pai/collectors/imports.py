@@ -73,13 +73,17 @@ class ImportCollector:
 
         caller = "__unknown__"
         if globals:
-            caller_name = globals.get("__name__")
+            caller_name = None
+            if "__name__" in globals:
+                caller_name = globals["__name__"]
             if isinstance(caller_name, str):
                 caller = caller_name
 
         package = ""
         if globals:
-            pkg = globals.get("__package__")
+            pkg = None
+            if "__package__" in globals:
+                pkg = globals["__package__"]
             if isinstance(pkg, str):
                 package = pkg
 

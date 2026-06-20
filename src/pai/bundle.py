@@ -9,6 +9,9 @@ import json
 from pathlib import Path
 from typing import NotRequired, TypedDict
 
+from pai.event_names import EventName, is_side_effect_event
+from pai.event_records import EventRecord
+
 __all__ = ["BundleData", "RunInfo", "build_bundle", "load_events"]
 
 EVENTS_FILE = "events.jsonl"
@@ -30,10 +33,7 @@ class BundleData(TypedDict):
     imports: list[dict]
     calls: list[dict]
     tests: list[dict]
-    http: list[dict]
-    sql: list[dict]
-    aws: list[dict]
-    ai: list[dict]
+    effects: dict[str, list[dict]]
     unknown: NotRequired[list[dict]]
 
 
@@ -60,43 +60,54 @@ def build_bundle(run_dir: Path) -> BundleData:
     imports: list[dict] = []
     calls: list[dict] = []
     tests: list[dict] = []
-    http: list[dict] = []
-    sql: list[dict] = []
-    aws: list[dict] = []
-    ai: list[dict] = []
+    effects: dict[str, list[dict]] = {}
     unknown: list[dict] = []
 
     for event in events:
-        event_type = event.get("event", "")
-        if event_type == "run_start":
-            run_start = event
-        elif event_type == "run_end":
-            run_end = event
-        elif event_type == "exception":
-            exceptions.append(event)
-        elif event_type == "import":
-            imports.append(event)
-        elif event_type == "call":
-            calls.append(event)
-        elif event_type == "test":
-            tests.append(event)
-        elif event_type == "http":
-            http.append(event)
-        elif event_type == "sql":
-            sql.append(event)
-        elif event_type == "aws":
-            aws.append(event)
-        elif event_type == "ai":
-            ai.append(event)
-        else:
-            unknown.append(event)
+        event_type = EventRecord(event).name
+        match event_type:
+            case EventName.RUN_START:
+                run_start = event
+            case EventName.RUN_END:
+                run_end = event
+            case EventName.EXCEPTION:
+                exceptions.append(event)
+            case EventName.IMPORT:
+                imports.append(event)
+            case EventName.CALL:
+                calls.append(event)
+            case EventName.TEST:
+                tests.append(event)
+            case EventName() as package if is_side_effect_event(package):
+                events_for_package = effects.setdefault(package.value, [])
+                events_for_package.append(event)
+            case _:
+                unknown.append(event)
+
+    command: list[str] = []
+    cwd = ""
+    python_version = ""
+    exit_code = -1
+    duration_ms = 0
+
+    if run_start:
+        command_value = run_start["command"]
+        if isinstance(command_value, list):
+            for part in command_value:
+                command.append(str(part))
+        cwd = str(run_start["cwd"])
+        python_version = str(run_start["python_version"])
+
+    if run_end:
+        exit_code = int(run_end["exit_code"])
+        duration_ms = int(run_end["duration_ms"])
 
     run: RunInfo = {
-        "command": run_start.get("command", []),
-        "cwd": run_start.get("cwd", ""),
-        "python_version": run_start.get("python_version", ""),
-        "exit_code": run_end.get("exit_code", -1),
-        "duration_ms": run_end.get("duration_ms", 0),
+        "command": command,
+        "cwd": cwd,
+        "python_version": python_version,
+        "exit_code": exit_code,
+        "duration_ms": duration_ms,
     }
 
     bundle: BundleData = {
@@ -106,10 +117,7 @@ def build_bundle(run_dir: Path) -> BundleData:
         "imports": imports,
         "calls": calls,
         "tests": tests,
-        "http": http,
-        "sql": sql,
-        "aws": aws,
-        "ai": ai,
+        "effects": effects,
     }
 
     if unknown:
