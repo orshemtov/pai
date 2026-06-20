@@ -1,0 +1,48 @@
+[project]
+name = "pai"
+version = "0.1.0"
+description = "Python AI — structured runtime tracing for coding agents"
+readme = "README.md"
+authors = [
+    { name = "Or Shemtov", email = "oriesh@icloud.com" }
+]
+requires-python = ">=3.13"
+# Runtime path is injected into the target process — stdlib only, no runtime deps.
+dependencies = []
+
+[project.scripts]
+pai = "pai.cli:main"
+
+[project.entry-points.pytest11]
+pai = "pai.pytest_plugin"
+
+[build-system]
+requires = ["uv_build>=0.8.12,<0.9.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.9",
+    "ty>=0.0.1",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# E402 = import not at top; PLC0415 = import outside top level (both required by AGENTS.md).
+# Deliberately NOT enabling PERF401/C4 rules that push loops toward comprehensions.
+select = ["E", "F", "I", "UP", "B", "SIM", "RET", "PLC0415"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["pai"]
+
+[tool.ty.environment]
+python-version = "3.13"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

@@ -1,0 +1,31 @@
+[tasks.test]
+description = "Run the test suite"
+run = "uv run pytest"
+
+[tasks.lint]
+description = "Lint with ruff"
+run = "uv run ruff check ."
+
+[tasks.format]
+description = "Format with ruff"
+run = "uv run ruff format ."
+
+[tasks."format:check"]
+description = "Check formatting (CI mode)"
+run = "uv run ruff format --check ."
+
+[tasks.typecheck]
+description = "Type check with ty"
+run = "uv run ty check"
+
+[tasks.check]
+description = "Run lint + format check + type check"
+depends = ["lint", "format:check", "typecheck"]
+
+[tasks.ci]
+description = "Run full CI pipeline: tests + check"
+depends = ["test", "check"]
+
+[tasks.hooks]
+description = "Run all pre-commit hooks on all files"
+run = "prek run --all-files"
