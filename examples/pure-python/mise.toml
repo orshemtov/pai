@@ -1,0 +1,19 @@
+[tasks.demo]
+description = "Run the scripted PAI demonstration"
+run = "uv run python demo.py"
+
+[tasks."run:success"]
+description = "Trace a successful script with PAI"
+run = "uv run pai run python scripts/successful_order.py"
+
+[tasks."run:failure"]
+description = "Trace a failing script with PAI"
+run = "uv run pai run python scripts/failing_order.py"
+
+[tasks."run:tests"]
+description = "Trace this example's pytest suite with PAI"
+run = "uv run pai run pytest"
+
+[tasks.events]
+description = "Print the latest raw PAI events"
+run = "cat .pai/runs/latest/events.jsonl"

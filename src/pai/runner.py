@@ -50,7 +50,7 @@ def run(
     env: Mapping[str, str] | None = None,
 ) -> int:
     """Run ``argv`` as a PAI-instrumented subprocess; return its exit code."""
-    source_env = env if env is not None else os.environ
+    source_env = env or os.environ
 
     run_dir = run_module.create_run_dir(base)
     injected_env = build_env(run_dir, source_env)

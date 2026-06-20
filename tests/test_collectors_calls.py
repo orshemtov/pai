@@ -45,7 +45,7 @@ def test_call_collector_records_caller(tmp_path: Path) -> None:
         collector = CallCollector(writer=writer, original_profile=None)
 
         def callee_fn() -> None:
-            pass
+            return None
 
         old = sys.getprofile()
         sys.setprofile(collector.profile_hook)
@@ -82,7 +82,7 @@ def test_call_collector_records_file_and_line(tmp_path: Path) -> None:
         collector = CallCollector(writer=writer, original_profile=None)
 
         def fn_with_location() -> None:
-            pass
+            return None
 
         old = sys.getprofile()
         sys.setprofile(collector.profile_hook)
@@ -97,6 +97,24 @@ def test_call_collector_records_file_and_line(tmp_path: Path) -> None:
     assert events[0]["line"] > 0
 
 
+def test_call_collector_ignores_direct_pai_internal_frames(tmp_path: Path) -> None:
+    with EventWriter(tmp_path) as writer:
+        collector = CallCollector(writer=writer, original_profile=None)
+
+        old = sys.getprofile()
+        sys.setprofile(collector.profile_hook)
+        writer.type_file_for("internal")
+        sys.setprofile(old)
+
+    events = read_call_events(tmp_path)
+
+    callees: list[str] = []
+    for event in events:
+        callees.append(str(event["callee"]))
+
+    assert "pai.writer.EventWriter.type_file_for" not in callees
+
+
 def test_call_collector_chains_original_profile(tmp_path: Path) -> None:
     calls: list[str] = []
 
@@ -107,7 +125,7 @@ def test_call_collector_chains_original_profile(tmp_path: Path) -> None:
         collector = CallCollector(writer=writer, original_profile=original)
 
         def fn() -> None:
-            pass
+            return None
 
         old = sys.getprofile()
         sys.setprofile(collector.profile_hook)

@@ -1,0 +1,19 @@
+[tasks.demo]
+description = "Run the scripted FastAPI PAI demonstration"
+run = "uv run python demo.py"
+
+[tasks.serve]
+description = "Start the FastAPI app under PAI"
+run = "uv run pai run uvicorn app.main:app --host 127.0.0.1 --port 8765"
+
+[tasks.health]
+description = "Call the health endpoint on the running demo server"
+run = "uv run python scripts/request_health.py"
+
+[tasks."thread-crash"]
+description = "Trigger a background-thread exception on the running demo server"
+run = "uv run python scripts/request_thread_crash.py"
+
+[tasks.events]
+description = "Print the latest raw PAI events"
+run = "cat .pai/runs/latest/events.jsonl"

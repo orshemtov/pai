@@ -11,7 +11,8 @@ def test_build_exception_event_from_traceback() -> None:
         raise_key_error()
     except KeyError as error:
         tb = error.__traceback__
-        assert tb is not None
+        if not tb:
+            raise AssertionError("expected traceback") from error
         event = exceptions.build_exception_event(type(error), error, tb)
 
     assert event.exception_type == "KeyError"

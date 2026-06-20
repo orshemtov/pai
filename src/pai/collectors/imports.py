@@ -10,6 +10,7 @@ globally.
 import builtins
 import types
 from collections.abc import Callable, Mapping, Sequence
+from typing import Any, cast
 
 from pai.events import ImportEvent
 from pai.writer import EventWriter
@@ -62,13 +63,13 @@ class ImportCollector:
         result = self.original_import(name, globals, locals, fromlist, level)
 
         caller = "__unknown__"
-        if globals is not None:
+        if globals:
             caller_name = globals.get("__name__")
             if isinstance(caller_name, str):
                 caller = caller_name
 
         package = ""
-        if globals is not None:
+        if globals:
             pkg = globals.get("__package__")
             if isinstance(pkg, str):
                 package = pkg
@@ -86,8 +87,10 @@ class ImportCollector:
 
 def install(writer: EventWriter) -> None:
     """Replace ``builtins.__import__`` with an ``ImportCollector`` hook."""
+    original_import = cast(ImportCallable, builtins.__import__)
     collector = ImportCollector(
         writer=writer,
-        original_import=builtins.__import__,
+        original_import=original_import,
     )
-    builtins.__import__ = collector.patched_import  # type: ignore
+    patched_import = cast(Any, collector.patched_import)
+    builtins.__import__ = patched_import

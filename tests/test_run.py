@@ -9,7 +9,7 @@ RUN_ID_PATTERN = re.compile(r"^\d{8}T\d{6}-[0-9a-f]{8}$")
 def test_new_run_id_matches_format() -> None:
     run_id = run.new_run_id()
 
-    assert RUN_ID_PATTERN.match(run_id) is not None
+    assert RUN_ID_PATTERN.match(run_id)
 
 
 def test_new_run_id_is_unique() -> None:

@@ -26,7 +26,7 @@ def new_run_id() -> str:
 
 def runs_root(base: Path | None = None) -> Path:
     """Return the directory holding all runs for ``base`` (defaults to cwd)."""
-    root = base if base is not None else Path.cwd()
+    root = base or Path.cwd()
     return root / PAI_DIR_NAME / RUNS_DIR_NAME
 
 

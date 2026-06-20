@@ -45,15 +45,19 @@ class PaiPlugin:
             outcome = "skipped"
 
         message = ""
-        if report.failed and report.longrepr is not None:
+        if report.failed and report.longrepr:
             message = str(report.longrepr)
+
+        file = ""
+        if report.location:
+            file = report.location[0]
 
         self.writer.write(
             TestEvent(
                 test_id=report.nodeid,
                 outcome=outcome,
                 duration_ms=duration_ms,
-                file=report.location[0],
+                file=file,
                 message=message,
             )
         )

@@ -18,9 +18,16 @@ Dev tooling goes in the dev dependency group.
   known-shape dicts (prefer a dataclass when the shape is owned by us).
 - **Loops over comprehensions.** Write normal `for` loops for readability. Avoid list/dict/set
   comprehensions and generator expressions except trivial one-liners that are clearer that way.
+- **Truthiness over sentinel spelling.** Prefer `if value:` and `if not value:` over
+  `is None` / `is not None` checks when the value's truthiness represents presence. If an
+  empty collection, zero, or empty string is a valid distinct value, make that distinction
+  explicit with a small helper or clear branch structure.
 - **No `hasattr` / `getattr` / `setattr`.** Use explicit attribute access and typed structures.
 - **No `from __future__ import annotations`.**
 - **Imports at the top only.** No mid-file or in-function imports.
+- **One effect per line.** Avoid semicolon-style command/code chains and dense one-liners that
+  import, compute, call, and print together. Split setup, action, and output into separate
+  statements so execution is easy to read and debug.
 - **Dependency injection — no implicit global access.** Functions must not read mutable
   globals (env vars, `sys.path`, `sys.excepthook`, etc.) from outer or global scope. Pass them
   as parameters from the caller. Module-level constants (ALL_CAPS) are fine. `os.environ` as a
@@ -44,6 +51,15 @@ Dev tooling goes in the dev dependency group.
 4. Refactor if needed; keep tests green.
 
 Tests describe behavior precisely — they are the spec for each unit.
+
+## Pytest conventions
+
+- Put shared test setup in `tests/conftest.py` fixtures instead of repeating path, command, or
+  parsing helpers across test modules.
+- Keep test bodies focused on behavior. Fixtures should provide environment/context; tests
+  should arrange only the inputs that are specific to the behavior under test.
+- Prefer real subprocesses and files for integration behavior. Avoid inline `python -c` snippets
+  when a small script or fixture is clearer.
 
 ## Privacy of captured data
 

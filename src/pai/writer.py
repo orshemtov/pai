@@ -23,7 +23,7 @@ class EventWriter:
 
     def __init__(self, run_dir: Path) -> None:
         self.run_dir = run_dir
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
 
         self.events_file = self.open_file(EVENTS_FILE)
         self.type_files: dict[str, TextIO] = {}
@@ -61,7 +61,7 @@ class EventWriter:
 
     def type_file_for(self, event_name: str) -> TextIO:
         handle = self.type_files.get(event_name)
-        if handle is None:
+        if not handle:
             handle = self.open_file(f"{event_name}s.json")
             self.type_files[event_name] = handle
         return handle

@@ -46,3 +46,10 @@ python-version = "3.13"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+filterwarnings = ["ignore::pytest.PytestCollectionWarning"]
+
+[tool.uv.workspace]
+members = [
+    "examples/fastapi",
+    "examples/pure-python",
+]

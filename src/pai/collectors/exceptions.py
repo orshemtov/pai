@@ -11,6 +11,7 @@ import sys
 import threading
 from collections.abc import Callable
 from types import TracebackType
+from typing import cast
 
 from pai.events import ExceptionEvent, LocalSchema
 from pai.writer import EventWriter
@@ -29,7 +30,7 @@ __all__ = [
 
 def deepest_traceback(tb: TracebackType) -> TracebackType:
     deepest = tb
-    while deepest.tb_next is not None:
+    while deepest.tb_next:
         deepest = deepest.tb_next
     return deepest
 
@@ -92,23 +93,24 @@ class ExceptionCollector:
         exc: BaseException,
         tb: TracebackType | None,
     ) -> None:
-        if tb is not None:
+        if tb:
             self.writer.write(build_exception_event(exc_type, exc, tb))
         self.original_excepthook(exc_type, exc, tb)
 
     def thread_exception_hook(self, args: threading.ExceptHookArgs) -> None:
         tb = args.exc_traceback
-        if args.exc_type is not None and args.exc_value is not None and tb is not None:
+        if args.exc_type and args.exc_value and tb:
             self.writer.write(build_exception_event(args.exc_type, args.exc_value, tb))
         self.original_thread_hook(args)
 
 
 def install(writer: EventWriter) -> None:
     """Wire an ``ExceptionCollector`` into ``sys.excepthook`` and ``threading.excepthook``."""
+    original_thread_hook = cast(ThreadExceptHookCallable, threading.excepthook)
     collector = ExceptionCollector(
         writer=writer,
         original_excepthook=sys.excepthook,
-        original_thread_hook=threading.excepthook,  # type: ignore
+        original_thread_hook=original_thread_hook,
     )
     sys.excepthook = collector.exception_hook
     threading.excepthook = collector.thread_exception_hook
