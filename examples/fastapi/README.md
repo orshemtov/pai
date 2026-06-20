@@ -1,6 +1,10 @@
-# PAI FastAPI Example
+# PAI FastAPI Agent Workflow
 
-This example shows PAI wrapping a long-running FastAPI service with:
+This example shows how an agent can wrap a long-running FastAPI service and
+inspect structured runtime facts from a real server process.
+
+The app remains normal FastAPI code. PAI provides the agent-facing execution
+layer around it:
 
 ```bash
 pai run uvicorn app.main:app
@@ -14,31 +18,27 @@ It demonstrates:
 - A structured `exception` event from an uncaught background-thread failure.
 - `run_end` when the server process is stopped.
 
-FastAPI catches normal route exceptions, so this example uses a
-`POST /debug/thread-crash` endpoint to start a thread that raises an uncaught
-`KeyError`. That maps honestly to PAI's current exception collector, which uses
+FastAPI catches normal route exceptions, so this example uses
+`POST /debug/thread-crash` to start a thread that raises an uncaught `KeyError`.
+That maps honestly to PAI's current exception collector, which uses
 `sys.excepthook` and `threading.excepthook`.
 
-## Run It
+## Run
 
-Install/sync the workspace from the repo root first:
+From the repo root:
 
 ```bash
 uv sync
-```
-
-Then run the scripted demo:
-
-```bash
 cd examples/fastapi
 mise run demo
 ```
 
 The demo starts uvicorn under PAI through `python -m app.serve`, waits for
-readiness, sends a normal order request, triggers the background-thread exception,
-requests shutdown, and prints a summary of `.pai/runs/latest/events.jsonl`.
+readiness, sends a normal order request, triggers the background-thread
+exception, requests shutdown, and prints a summary of
+`.pai/runs/latest/events.jsonl`.
 
-## Manual Flow
+## Manual Agent Flow
 
 In one terminal:
 
@@ -56,19 +56,14 @@ curl http://127.0.0.1:8765/orders/100
 curl -X POST http://127.0.0.1:8765/debug/thread-crash
 ```
 
-Stop the server with `Ctrl-C`, then inspect the latest run:
+Stop the server with `Ctrl-C`, then inspect structured output:
 
 ```bash
 mise run events
+pai bundle --run .pai/runs/latest
 ```
 
-## Inspect the Output
+## Output
 
-PAI writes events under:
-
-```text
-.pai/runs/latest/events.jsonl
-```
-
-The scripted demo should include `run_start`, many `import` and `call` events, one
+The latest run should include `run_start`, many `import` and `call` events, one
 `exception` event from `crash_in_background`, and `run_end`.

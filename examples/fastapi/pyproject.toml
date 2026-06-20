@@ -9,12 +9,12 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "fastapi>=0.120.0",
-    "pai",
+    "pai-trace",
     "uvicorn>=0.38.0",
 ]
 
 [tool.uv.sources]
-pai = { workspace = true }
+pai-trace = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.8.12,<0.9.0"]

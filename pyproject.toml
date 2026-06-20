@@ -1,14 +1,33 @@
 [project]
-name = "pai"
+name = "pai-trace"
 version = "0.1.0"
-description = "Python AI — structured runtime tracing for coding agents"
+description = "Agent-native runtime output for Python"
 readme = "README.md"
 authors = [
     { name = "Or Shemtov", email = "oriesh@icloud.com" }
 ]
 requires-python = ">=3.13"
+license = "MIT"
+keywords = ["agents", "ai", "runtime", "tracing", "testing", "observability"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Debuggers",
+    "Topic :: Software Development :: Testing",
+]
 # Runtime path is injected into the target process — stdlib only, no runtime deps.
 dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/orshemtov/pai"
+Repository = "https://github.com/orshemtov/pai"
+Issues = "https://github.com/orshemtov/pai/issues"
+Documentation = "https://github.com/orshemtov/pai#readme"
 
 [project.scripts]
 pai = "pai.cli:main"
@@ -53,3 +72,6 @@ members = [
     "examples/fastapi",
     "examples/pure-python",
 ]
+
+[tool.uv.build-backend]
+module-name = "pai"

@@ -1,0 +1,26 @@
+# PAI
+
+PAI is agent-native runtime output for Python.
+
+Use PAI when a coding agent needs structured facts from a Python execution:
+
+```bash
+pai run python app.py
+pai run pytest
+pai bundle --run .pai/runs/latest
+```
+
+Primary agent docs:
+
+- `README.md`: project overview and quickstart.
+- `skill/SKILL.md`: workflow instructions for coding agents.
+- `AGENTS.md`: repo coding rules.
+- `spec/ARCHITECTURE.md`: runtime injection and event model.
+
+Important constraints:
+
+- Runtime-injected code must use the Python standard library only.
+- PAI records schemas and metadata, not raw user values.
+- The PyPI distribution is `pai-trace`; the CLI and import package are `pai`.
+- Agents should prefer `.pai/runs/latest/events.jsonl` and `pai bundle` over
+  terminal prose.

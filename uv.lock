@@ -4,9 +4,9 @@ requires-python = ">=3.13"
 
 [manifest]
 members = [
-    "pai",
     "pai-example-fastapi",
     "pai-example-pure-python",
+    "pai-trace",
 ]
 
 [[package]]
@@ -113,7 +113,43 @@ wheels = [
 ]
 
 [[package]]
-name = "pai"
+name = "pai-example-fastapi"
+version = "0.1.0"
+source = { editable = "examples/fastapi" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "pai-trace" },
+    { name = "uvicorn" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.120.0" },
+    { name = "pai-trace", editable = "." },
+    { name = "uvicorn", specifier = ">=0.38.0" },
+]
+
+[[package]]
+name = "pai-example-pure-python"
+version = "0.1.0"
+source = { editable = "examples/pure-python" }
+dependencies = [
+    { name = "pai-trace" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "pai-trace", editable = "." }]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=8.0" }]
+
+[[package]]
+name = "pai-trace"
 version = "0.1.0"
 source = { editable = "." }
 
@@ -132,42 +168,6 @@ dev = [
     { name = "ruff", specifier = ">=0.9" },
     { name = "ty", specifier = ">=0.0.1" },
 ]
-
-[[package]]
-name = "pai-example-fastapi"
-version = "0.1.0"
-source = { editable = "examples/fastapi" }
-dependencies = [
-    { name = "fastapi" },
-    { name = "pai" },
-    { name = "uvicorn" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "fastapi", specifier = ">=0.120.0" },
-    { name = "pai", editable = "." },
-    { name = "uvicorn", specifier = ">=0.38.0" },
-]
-
-[[package]]
-name = "pai-example-pure-python"
-version = "0.1.0"
-source = { editable = "examples/pure-python" }
-dependencies = [
-    { name = "pai" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "pai", editable = "." }]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=8.0" }]
 
 [[package]]
 name = "pluggy"

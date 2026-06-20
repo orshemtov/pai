@@ -8,7 +8,7 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
-    "pai",
+    "pai-trace",
 ]
 
 [dependency-groups]
@@ -17,7 +17,7 @@ dev = [
 ]
 
 [tool.uv.sources]
-pai = { workspace = true }
+pai-trace = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.8.12,<0.9.0"]
