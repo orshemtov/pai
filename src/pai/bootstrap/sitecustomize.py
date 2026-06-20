@@ -15,7 +15,7 @@ import sys
 from collections.abc import Mapping
 from pathlib import Path
 
-from pai.collectors import calls, exceptions, imports
+from pai.collectors import calls, exceptions, imports, side_effects
 from pai.events import RunStartEvent
 from pai.writer import EventWriter
 
@@ -46,8 +46,9 @@ def activate(env: Mapping[str, str], argv: list[str], cwd: str, python_version: 
     writer.write(RunStartEvent(command=argv, cwd=cwd, python_version=python_version))
 
     exceptions.install(writer)
-    imports.install(writer)
+    import_collector = imports.install(writer)
     calls.install(writer)
+    side_effects.install(writer, import_collector)
 
 
 with contextlib.suppress(Exception):

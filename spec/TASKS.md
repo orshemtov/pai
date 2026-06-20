@@ -10,62 +10,65 @@ first, then the minimal code to pass it). See `PHASES.md` for the milestone view
 - [x] `spec/REFERENCES.md`
 - [x] `spec/PHASES.md`
 - [x] `spec/TASKS.md`
-- [ ] `AGENTS.md`
-- [ ] `pyproject.toml`: dev group (pytest, ruff, ty), `[tool.ruff]`, `[tool.ty]`,
+- [x] `AGENTS.md`
+- [x] `pyproject.toml`: dev group (pytest, ruff, ty), `[tool.ruff]`, `[tool.ty]`,
       `[tool.pytest.ini_options]`, fix `[project.scripts]` → `pai.cli:main`
-- [ ] `.pre-commit-config.yaml` (ruff lint+format, ty, hygiene) for prek
-- [ ] `.gitignore` (add `.pai/`)
-- [ ] `uv sync` works
+- [x] `.pre-commit-config.yaml` (ruff lint+format, ty, hygiene) for prek
+- [x] `.gitignore` (add `.pai/`)
+- [x] `uv sync` works
+- [x] `mise.toml` task runner (test, lint, format, typecheck, check, ci, hooks)
 
 ## Phase 1 — Core pipeline + exceptions (TDD)
 
-### run.py — run identity + paths
-- [ ] test: run-id format + uniqueness; `create_run_dir` makes dir + `latest` pointer
-- [ ] impl: `new_run_id()`, `runs_root()`, `create_run_dir()`, `latest_pointer()`
+- [x] test + impl: `new_run_id()`, `runs_root()`, `create_run_dir()`, `latest_pointer()`
+- [x] test + impl: `build_env` (PYTHONPATH + PAI_RUN_DIR injection), `run(argv) -> int`
+- [x] test + impl: `EventWriter` — JSONL append, thread-safe, per-type fan-out
+- [x] test + impl: `ExceptionEvent.to_dict()` matches Example 1 shape
+- [x] test + impl: `build_exception_event` from synthetic traceback (symbol, line, `locals_schema`)
+- [x] impl: `bootstrap/sitecustomize.py` — read `PAI_RUN_DIR`, install collectors, chain prior
+- [x] impl: `pai run <cmd>` CLI
+- [x] integration test: `pai run python <fixture>` → structured exception event in `events.jsonl`
 
-### runner.py — env injection + subprocess
-- [ ] test: `build_env` prepends bootstrap dir to `PYTHONPATH` (preserving existing), sets
-      `PAI_RUN_DIR`
-- [ ] impl: `build_env(run_dir)`, `run(argv) -> int`
+## Phase 2 — Import graph
 
-### writer.py — event sink
-- [ ] test: appends valid JSONL; thread-safe under concurrent writes; per-type fan-out file
-- [ ] impl: `EventWriter` (open, `write(event)`, lock, flush, per-type files, close)
+- [x] `ImportEvent(module, imported)` — one event per import edge
+- [x] `ImportCollector` class (DI: writer + original `builtins.__import__`)
+- [x] `resolve_module_name` — absolute + relative import resolution
+- [x] Wired into `sitecustomize.py`
+- [x] Unit tests (resolve, dedup, different callers, None globals)
+- [x] Integration test: `pai run python <script with imports>` → import events in `events.jsonl`
 
-### events.py — event model
-- [ ] test: `ExceptionEvent.to_dict()` matches Example 1 shape
-- [ ] impl: base event + `ExceptionEvent` + `LocalSchema` TypedDict
+## Phase 3 — Runtime call tracing
 
-### collectors/exceptions.py — exception collector
-- [ ] test: build event from a synthetic traceback (symbol, line, `locals_schema`)
-- [ ] impl: `build_exception_event(...)`, `install(writer)` wiring excepthooks
+- [x] `CallEvent(caller, callee, file, line, duration_ms)`
+- [x] `CallCollector` class (DI: writer + original profile); `should_trace_frame` filters PAI internals
+- [x] `sys.setprofile` + `threading.setprofile` wired in `sitecustomize.py`
+- [x] Unit tests (emits event, records caller, duration, file/line, chains original, filters internals)
+- [x] Integration test: `pai run python <script with function calls>` → call events
 
-### bootstrap/sitecustomize.py — injection entrypoint
-- [ ] impl: read `PAI_RUN_DIR`, create writer, install collectors, chain prior sitecustomize
+## Phase 4 — Pytest plugin
 
-### cli.py — command line
-- [ ] impl: argparse `main()` with `run` subcommand → `runner.run`
+- [x] `TestEvent(test_id, outcome, duration_ms, file, message)`
+- [x] `src/pai/pytest_plugin.py` — `PaiPlugin` class; registered via `pytest11` entry point
+- [x] No-op when `PAI_RUN_DIR` not set; emits one `TestEvent` per test item (when=call only)
+- [x] `pyproject.toml`: `[project.entry-points.pytest11]` registration
+- [x] Tests: passing, failing, duration, file, multiple tests, noop without run dir
 
-### integration
-- [ ] test: `pai run python <fixture>` writes `events.jsonl` with the expected exception event
-      (`symbol`, `exception_type`, `message`, `locals_schema.payload.keys == ["name"]`)
+## Verification (current)
 
-## Verification
-- [x] `uv run pytest` green (18 passing)
-- [x] `uv run ruff check . && uv run ruff format --check .` clean
-- [x] `uv run ty check` clean
-- [x] `prek run --all-files` passes
-- [x] manual e2e (idea-doc Example 1) — confirmed `run_start` → `exception` → `run_end`
+- [x] `uv run pytest` — 45 passing
+- [x] `uv run ruff check . && uv run ruff format --check .` — clean
+- [x] `uv run ty check` — clean
+- [x] `mise run ci` — green
 
 ## Backlog (deferred — see PHASES.md)
-- [ ] P2 import graph (ast static analysis + import hooks)
-- [ ] P3 runtime call tracing + timing (setprofile)
-- [ ] P4 pytest plugin — test intelligence (failure ↔ covered functions)
+
 - [ ] P5 side-effect tracing — initial: requests, httpx, boto3/aioboto3, sqlalchemy, asyncpg.
       Future: openai, anthropic, redis, celery. Ref: ddtrace supported-libraries.
 - [ ] P6 `pai bundle` + symbol graph
 
 ## Zerolang learnings (adopted or deferred)
+
 Adopted (done):
 - [x] Schema version on every event (`schema_version: 1`)
 - [x] Timestamp on every event (injected by writer)

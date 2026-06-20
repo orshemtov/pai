@@ -44,6 +44,9 @@ def resolve_module_name(name: str, package: str, level: int) -> str:
     return ".".join(parts)
 
 
+ModuleHook = Callable[[types.ModuleType], None]
+
+
 class ImportCollector:
     """Records import edges via a patched ``__import__`` function."""
 
@@ -51,6 +54,12 @@ class ImportCollector:
         self.writer = writer
         self.original_import = original_import
         self.seen: set[tuple[str, str]] = set()
+        self.hooks: dict[str, ModuleHook] = {}
+        self.hooks_fired: set[str] = set()
+
+    def register_hook(self, module_name: str, callback: ModuleHook) -> None:
+        """Register a callback to fire once when ``module_name`` is first imported."""
+        self.hooks[module_name] = callback
 
     def patched_import(
         self,
@@ -82,11 +91,19 @@ class ImportCollector:
                 self.seen.add(edge)
                 self.writer.write(ImportEvent(module=caller, imported=absolute_name))
 
+            top_level = absolute_name.split(".")[0]
+            if top_level in self.hooks and top_level not in self.hooks_fired:
+                self.hooks_fired.add(top_level)
+                self.hooks[top_level](result)
+
         return result
 
 
-def install(writer: EventWriter) -> None:
-    """Replace ``builtins.__import__`` with an ``ImportCollector`` hook."""
+def install(writer: EventWriter) -> "ImportCollector":
+    """Replace ``builtins.__import__`` with an ``ImportCollector`` hook.
+
+    Returns the collector so callers can register post-import hooks.
+    """
     original_import = cast(ImportCallable, builtins.__import__)
     collector = ImportCollector(
         writer=writer,
@@ -94,3 +111,4 @@ def install(writer: EventWriter) -> None:
     )
     patched_import = cast(Any, collector.patched_import)
     builtins.__import__ = patched_import
+    return collector

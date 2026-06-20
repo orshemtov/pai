@@ -9,13 +9,17 @@ from dataclasses import dataclass
 from typing import ClassVar, NotRequired, TypedDict
 
 __all__ = [
+    "AiEvent",
+    "AwsEvent",
     "CallEvent",
     "Event",
     "ExceptionEvent",
+    "HttpEvent",
     "ImportEvent",
     "LocalSchema",
     "RunEndEvent",
     "RunStartEvent",
+    "SqlEvent",
     "TestEvent",
 ]
 
@@ -76,6 +80,53 @@ class ImportEvent(Event):
 
     module: str
     imported: str
+
+
+@dataclass
+class SqlEvent(Event):
+    """A SQL statement executed via SQLAlchemy or asyncpg."""
+
+    event_name: ClassVar[str] = "sql"
+
+    operation: str
+    query: str
+    duration_ms: int
+
+
+@dataclass
+class AwsEvent(Event):
+    """An AWS API call captured from botocore (boto3 / aiobotocore)."""
+
+    event_name: ClassVar[str] = "aws"
+
+    service: str
+    operation: str
+    duration_ms: int
+
+
+@dataclass
+class AiEvent(Event):
+    """An LLM completion call captured from openai or anthropic SDK."""
+
+    event_name: ClassVar[str] = "ai"
+
+    provider: str
+    model: str
+    input_tokens: int
+    output_tokens: int
+    duration_ms: int
+
+
+@dataclass
+class HttpEvent(Event):
+    """An outbound HTTP request captured from requests or httpx."""
+
+    event_name: ClassVar[str] = "http"
+
+    method: str
+    url: str
+    status_code: int
+    duration_ms: int
 
 
 @dataclass
