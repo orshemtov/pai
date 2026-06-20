@@ -68,3 +68,43 @@ def test_pure_python_failure_example_emits_structured_events(
     assert exception["exception_type"] == "KeyError"
     assert exception["locals_schema"]["payload"]["type"] == "dict"
     assert "customer_name" in exception["locals_schema"]["payload"]["keys"]
+
+
+def test_pure_python_pytest_example_emits_test_events(
+    pure_python_example: Path,
+    pai_command: Path,
+    read_events,
+) -> None:
+    result = subprocess.run(
+        [
+            str(pai_command),
+            "run",
+            sys.executable,
+            "-m",
+            "pytest",
+            "tests/test_orders.py",
+        ],
+        cwd=pure_python_example,
+        env={"PYTHONPATH": str(pure_python_example)},
+        check=False,
+        timeout=15,
+    )
+
+    assert result.returncode != 0
+
+    latest = pure_python_example / ".pai" / "runs" / "latest"
+    events = read_events(latest / "events.jsonl")
+
+    test_events: list[dict] = []
+    for event in events:
+        if event["event"] == "test":
+            test_events.append(event)
+
+    outcomes: list[str] = []
+    for event in test_events:
+        outcomes.append(str(event["outcome"]))
+
+    assert outcomes == ["passed", "failed"]
+    assert "test_build_receipt_calculates_total" in test_events[0]["test_id"]
+    assert "test_intentional_failure_demonstrates_pai_test_event" in test_events[1]["test_id"]
+    assert "AssertionError" in test_events[1]["message"]

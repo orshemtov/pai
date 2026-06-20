@@ -52,6 +52,10 @@ The pytest command also exits non-zero on purpose. One test has an intentionally
 wrong expected total so PAI can emit a failed `test` event with the pytest
 failure message.
 
+The pytest task sets `PYTHONPATH=.` because this example is a workspace member,
+and pytest otherwise resolves imports from the workspace root instead of the
+example directory.
+
 ## Output
 
 PAI writes events under:

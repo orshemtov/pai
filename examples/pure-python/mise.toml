@@ -12,7 +12,7 @@ run = "uv run pai run python scripts/failing_order.py"
 
 [tasks."run:tests"]
 description = "Trace this example's pytest suite with PAI"
-run = "uv run pai run pytest"
+run = "PYTHONPATH=. uv run pai run pytest tests/test_orders.py"
 
 [tasks.events]
 description = "Print the latest raw PAI events"
