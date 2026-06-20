@@ -124,6 +124,9 @@ Each emitted event includes:
 Agents should use these handles for follow-up queries instead of reloading full
 logs.
 
+For a complete command-and-response walkthrough, see
+[`examples/agent-responses.md`](examples/agent-responses.md).
+
 Example exception event:
 
 ```json
